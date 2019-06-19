@@ -46,8 +46,15 @@ public abstract class TamyNails {
      */
     public static void agregarCliente(String nom, String ape, String tel) {
         String texto = "¿Estás segura que queres añadir al cliente?\nNombre: " + nom + "\nApellido: " + ape + "\nTeléfono: " + tel;
+        JOptionPane.showMessageDialog(null, "¡El cliente ya existe en la base de datos!", "ERROR", JOptionPane.ERROR_MESSAGE);
         int respuesta = JOptionPane.showConfirmDialog(null, texto, "¿Estás segura?", JOptionPane.YES_NO_OPTION);
         if (respuesta == JOptionPane.YES_OPTION) {
+            for(Cliente cliente : listaClientes){
+                if(cliente.getNombre().equalsIgnoreCase(nom) && cliente.getApellido().equalsIgnoreCase(ape) && cliente.getTelefono().equalsIgnoreCase(tel)){
+                   JOptionPane.showMessageDialog(null, "¡El cliente ya existe en la base de datos!", "ERROR", JOptionPane.ERROR_MESSAGE);
+                   return;
+                }
+            }
             int num = listaClientes.size() + 1;
             if (!listaClientes.isEmpty()) {
                 for (int i = 0; i < listaClientes.size() - 1; i++) {

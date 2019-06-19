@@ -1,8 +1,6 @@
 package gui;
 
-import gestion.ManejoDB;
 import gestion.TamyNails;
-import java.sql.*;
 
 /**
  *

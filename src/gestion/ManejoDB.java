@@ -42,7 +42,6 @@ public abstract class ManejoDB {
      * Ejecuta las querys en la BD
      * @param query Query a ejecutar
      * @return Cantidad de lineas cambiadas en la BD
-     * @see java.sql.Statement
      */
     public static int ejecutarQuery(String query){
         try {
