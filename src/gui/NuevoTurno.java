@@ -134,18 +134,10 @@ public class NuevoTurno extends javax.swing.JDialog {
 
     private void guardarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guardarButtonActionPerformed
         String desc = descripcionTF.getText();
-        String fecha = "";
-        String[] fechaArray = fechaTF.getText().split("/");
-        for (int i = fechaArray.length - 1; i >= 0; i--) {
-            if (i > 0) {
-                fecha += (fechaArray[i] + "-");
-            } else {
-                fecha += fechaArray[i];
-            }
-        }
-        fecha += " " + horaTF.getText() + ":00";
+        String fecha = fechaTF.getText();
+        String hora = horaTF.getText();
         int monto = Integer.parseInt(montoTF.getText());
-        TamyNails.asignarTurno(id_cliente, desc, fecha, monto);
+        TamyNails.asignarTurno(id_cliente, desc, fecha, hora, monto);
         this.dispose();
     }//GEN-LAST:event_guardarButtonActionPerformed
 

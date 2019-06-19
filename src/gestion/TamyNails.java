@@ -46,13 +46,12 @@ public abstract class TamyNails {
      */
     public static void agregarCliente(String nom, String ape, String tel) {
         String texto = "¿Estás segura que queres añadir al cliente?\nNombre: " + nom + "\nApellido: " + ape + "\nTeléfono: " + tel;
-        JOptionPane.showMessageDialog(null, "¡El cliente ya existe en la base de datos!", "ERROR", JOptionPane.ERROR_MESSAGE);
-        int respuesta = JOptionPane.showConfirmDialog(null, texto, "¿Estás segura?", JOptionPane.YES_NO_OPTION);
+        int respuesta = JOptionPane.showConfirmDialog(null, texto, "¿Estás segura?", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (respuesta == JOptionPane.YES_OPTION) {
-            for(Cliente cliente : listaClientes){
-                if(cliente.getNombre().equalsIgnoreCase(nom) && cliente.getApellido().equalsIgnoreCase(ape) && cliente.getTelefono().equalsIgnoreCase(tel)){
-                   JOptionPane.showMessageDialog(null, "¡El cliente ya existe en la base de datos!", "ERROR", JOptionPane.ERROR_MESSAGE);
-                   return;
+            for (Cliente cliente : listaClientes) {
+                if (cliente.getNombre().equalsIgnoreCase(nom) && cliente.getApellido().equalsIgnoreCase(ape) && cliente.getTelefono().equalsIgnoreCase(tel)) {
+                    JOptionPane.showMessageDialog(null, "¡El cliente ya existe en la base de datos!", "ERROR", JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
             }
             int num = listaClientes.size() + 1;
@@ -78,7 +77,7 @@ public abstract class TamyNails {
      * @param id Numero del cliente a eliminar
      */
     public static void eliminarCliente(int id) {
-        int respuesta = JOptionPane.showConfirmDialog(null, "¿Estás segura que queres borrar al cliente? Los datos no se pueden recuperar", "¿Estás segura?", JOptionPane.YES_NO_OPTION);
+        int respuesta = JOptionPane.showConfirmDialog(null, "¿Estás segura que queres borrar al cliente? Los datos no se pueden recuperar", "¿Estás segura?", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (respuesta == JOptionPane.YES_OPTION) {
             String query = "DELETE FROM clientes WHERE id_cliente = " + id + ";";
             if (ManejoDB.ejecutarQuery(query) > 0) {
@@ -100,7 +99,7 @@ public abstract class TamyNails {
      * @param fecha Fecha y hora del turno
      * @param monto Monto del turno
      */
-    public static void asignarTurno(int idCliente, String desc, String fecha, int monto) {
+    public static void asignarTurno(int idCliente, String desc, String fecha, String hora, int monto) {
         Cliente cliente = null;
         for (Cliente c : listaClientes) {
             if (c.getId() == idCliente) {
@@ -115,12 +114,21 @@ public abstract class TamyNails {
             } else {
                 idTurno = 1;
             }
-            String[] fh = fecha.split(" ");
-            String texto = "¿Estás segura que queres añadir el turno al cliente?\nCliente: " + cliente.getApellido() + " " + cliente.getApellido()
-                    + "\nDescripción: " + desc + "\nFecha: " + fh[0] + "\nHora: " + fh[1] + "\nMonto: " + monto;
-            int respuesta = JOptionPane.showConfirmDialog(null, texto, "¿Estás segura?", JOptionPane.YES_NO_OPTION);
+            String texto = "¿Estás segura que queres añadir el turno al cliente?\nCliente: " + cliente.getNombre() + " " + cliente.getApellido()
+                    + "\nDescripción: " + desc + "\nFecha: " + fecha + "\nHora: " + hora + "\nMonto: " + monto;
+            int respuesta = JOptionPane.showConfirmDialog(null, texto, "¿Estás segura?", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
             if (respuesta == JOptionPane.YES_OPTION) {
-                Turno turno = new Turno(idTurno, cliente, desc, fh[0], fh[1], monto, false);
+                Turno turno = new Turno(idTurno, cliente, desc, fecha, hora, monto, false);
+                String[] fechaArray = fecha.split("/");
+                fecha = "";
+                for (int i = fechaArray.length - 1; i >= 0; i--) {
+                    if (i > 0) {
+                        fecha += (fechaArray[i] + "-");
+                    } else {
+                        fecha += fechaArray[i];
+                    }
+                }
+                fecha += " " + hora + ":00";
 
                 String query = "INSERT INTO historial_turnos(id_turno, id_cliente, fecha_hora, monto, descripcion)"
                         + "VALUES (" + turno.getId() + ", " + idCliente + ", \"" + fecha + "\", " + monto + ", \"" + desc + "\");";
@@ -142,7 +150,7 @@ public abstract class TamyNails {
      * @param id
      */
     public static void eliminarTurno(int id) {
-        int respuesta = JOptionPane.showConfirmDialog(null, "¿Estás segura que queres borrar el turno? Los datos no se pueden recuperar", "¿Estás segura?", JOptionPane.YES_NO_OPTION);
+        int respuesta = JOptionPane.showConfirmDialog(null, "¿Estás segura que queres borrar el turno? Los datos no se pueden recuperar", "¿Estás segura?", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (respuesta == JOptionPane.YES_OPTION) {
             String query = "DELETE FROM historial_turnos WHERE id_turno = " + id + ";";
             if (ManejoDB.ejecutarQuery(query) > 0) {
@@ -191,6 +199,7 @@ public abstract class TamyNails {
 
     /**
      * Realiza una búsqueda en la DB para encontrar turnos en específico
+     *
      * @param categoria Por qué buscar (ID de turno, Fecha, Monto, etc)
      * @param busqueda Búsqueda a realizar
      * @return Lista de turnos que coinciden con la búsqueda
@@ -332,6 +341,5 @@ public abstract class TamyNails {
         }
         return aux;
     }
-    
-    
+
 }
