@@ -32,7 +32,7 @@ public class ListaProductos extends javax.swing.JDialog {
         DefaultTableModel modelH = (DefaultTableModel) herramientasTable.getModel();
         for (Producto producto : TamyNails.getListaProductos()) {
             System.out.println(producto.getClass().getSimpleName());
-            switch (producto.getClass().getName()) {
+            switch (producto.getClass().getSimpleName()) {
                 case "Esmalte":
                     Esmalte esmalte = (Esmalte) producto;
                     modelE.addRow(new Object[]{esmalte.getTipo(), esmalte.getColor(), esmalte.getEfecto(), esmalte.getPrecio()});
