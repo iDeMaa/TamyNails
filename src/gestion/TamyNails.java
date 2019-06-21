@@ -10,7 +10,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import recursos.Producto;
 
 /**
  *
@@ -20,6 +22,7 @@ public abstract class TamyNails {
 
     private static final List<Cliente> listaClientes = new ArrayList<>();
     private static final List<Turno> listaTurnos = new ArrayList<>();
+    private static final List<Producto> listaProductos = new ArrayList<>();
 
     public static List<Cliente> getListaClientes() {
         return listaClientes;
@@ -29,12 +32,29 @@ public abstract class TamyNails {
         return listaTurnos;
     }
 
+    public static List<Producto> getListaProductos() {
+        return listaProductos;
+    }
+
     public static void main(String[] args) {
+        final JOptionPane optionPane = new JOptionPane("Cargando datos, por favor espere...", JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}, null);
+        final JDialog dialog = new JDialog();
+        dialog.setTitle("Cargando...");
+        dialog.setContentPane(optionPane);
+        dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        dialog.pack();
+        dialog.setVisible(true);
+        dialog.setLocationRelativeTo(null);
+
         ManejoDB.conectar();
         ManejoDB.obtenerDatos();
-        MainMenu mainMenu = new MainMenu(null, false);
+
+        dialog.dispose();
+        System.out.println(listaProductos.size());
+        MainMenu mainMenu = new MainMenu();
         mainMenu.setVisible(true);
         mainMenu.setLocationRelativeTo(null);
+
     }
 
     /**
@@ -340,6 +360,49 @@ public abstract class TamyNails {
             Logger.getLogger(TamyNails.class.getName()).log(Level.SEVERE, null, ex);
         }
         return aux;
+    }
+
+    public static List<Producto> obtenerProductosUsados(int idTurno) {
+        List<Producto> lista = new ArrayList<>();
+        List<Producto> aux = listaProductos;
+        try {
+            String query = "SELECT e.id_producto, e.tipo FROM esmaltes e JOIN productos_turnos pt WHERE id_esmalte=id_producto AND id_turno=" + idTurno + ";";
+            ResultSet result = ManejoDB.ejecutarQuery(query, true);
+            while (result.next()) {
+                for (Producto producto : aux) {
+                    if (producto.getId() == result.getInt(1) && producto.getTipo().equalsIgnoreCase(result.getString(2))) {
+                        lista.add(producto);
+                        aux.remove(producto);
+                        break;
+                    }
+                }
+            }
+            query = "SELECT r.id_producto, r.tipo FROM removedores r JOIN productos_turnos pt WHERE id_removedor=id_producto AND id_turno=" + idTurno + ";";
+            result = ManejoDB.ejecutarQuery(query, true);
+            while (result.next()) {
+                for (Producto producto : aux) {
+                    if (producto.getId() == result.getInt(1) && producto.getTipo().equalsIgnoreCase(result.getString(2))) {
+                        lista.add(producto);
+                        aux.remove(producto);
+                        break;
+                    }
+                }
+            }
+            query = "SELECT h.id_producto, h.tipo FROM herramientas h JOIN productos_turnos pt WHERE id_removedor=id_producto AND id_turno=" + idTurno + ";";
+            result = ManejoDB.ejecutarQuery(query, true);
+            while (result.next()) {
+                for (Producto producto : aux) {
+                    if (producto.getId() == result.getInt(1) && producto.getTipo().equalsIgnoreCase(result.getString(2))) {
+                        lista.add(producto);
+                        aux.remove(producto);
+                        break;
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(TamyNails.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return lista;
     }
 
 }

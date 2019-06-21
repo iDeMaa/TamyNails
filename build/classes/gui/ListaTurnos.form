@@ -18,6 +18,16 @@
         </MenuItem>
         <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator1">
         </Component>
+        <MenuItem class="javax.swing.JMenuItem" name="verProductosMenuItem">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Ver productos usados"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="verProductosMenuItemActionPerformed"/>
+          </Events>
+        </MenuItem>
+        <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator2">
+        </Component>
         <MenuItem class="javax.swing.JMenuItem" name="eliminarTurnoMenuItem1">
           <Properties>
             <Property name="text" type="java.lang.String" value="Eliminar turno"/>

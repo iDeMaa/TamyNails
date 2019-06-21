@@ -5,6 +5,10 @@ import gestion.Turno;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import recursos.Esmalte;
+import recursos.Herramienta;
+import recursos.Producto;
+import recursos.Removedor;
 
 /**
  *
@@ -31,6 +35,8 @@ public class ListaTurnos extends javax.swing.JDialog {
         jPopupMenu1 = new javax.swing.JPopupMenu();
         realizadoMenuItem = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
+        verProductosMenuItem = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
         eliminarTurnoMenuItem1 = new javax.swing.JMenuItem();
         topPanel = new javax.swing.JPanel();
         busquedaTextField = new javax.swing.JTextField();
@@ -52,6 +58,15 @@ public class ListaTurnos extends javax.swing.JDialog {
         });
         jPopupMenu1.add(realizadoMenuItem);
         jPopupMenu1.add(jSeparator1);
+
+        verProductosMenuItem.setText("Ver productos usados");
+        verProductosMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                verProductosMenuItemActionPerformed(evt);
+            }
+        });
+        jPopupMenu1.add(verProductosMenuItem);
+        jPopupMenu1.add(jSeparator2);
 
         eliminarTurnoMenuItem1.setText("Eliminar turno");
         eliminarTurnoMenuItem1.addActionListener(new java.awt.event.ActionListener() {
@@ -264,6 +279,29 @@ public class ListaTurnos extends javax.swing.JDialog {
         JOptionPane.showMessageDialog(null, mensaje, "Tamy Nails - Datos obtenidos", JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_dataButtonActionPerformed
 
+    private void verProductosMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verProductosMenuItemActionPerformed
+        // TODO add your handling code here:
+        List<Producto> lista = TamyNails.obtenerProductosUsados((int) turnosTable.getValueAt(turnosTable.getSelectedRow(), 0));
+        String mensaje = "";
+        for(Producto producto : lista){
+            switch(producto.getClass().getSimpleName()){
+                case "Esmalte":
+                    Esmalte esmalte = (Esmalte) producto;
+                    mensaje += esmalte.getTipo() + " " + esmalte.getColor().toLowerCase() + "\n";
+                    break;
+                case "Herramienta":
+                    Herramienta herramienta = (Herramienta) producto;
+                    mensaje += herramienta.getTipo() + "\n";
+                    break;
+                case "Removedor":
+                    Removedor removedor = (Removedor) producto;
+                    mensaje += "Removedor "+removedor.getTipo().toLowerCase() + "\n";
+                    break;
+            }
+        }
+        JOptionPane.showMessageDialog(null, mensaje, "Tamy Nails - Productos usados en turno #"+(int) turnosTable.getValueAt(turnosTable.getSelectedRow(), 0), JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_verProductosMenuItemActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buscarButton;
     private javax.swing.JTextField busquedaTextField;
@@ -276,9 +314,11 @@ public class ListaTurnos extends javax.swing.JDialog {
     private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPopupMenu.Separator jSeparator1;
+    private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JButton limpiarButton;
     private javax.swing.JMenuItem realizadoMenuItem;
     private javax.swing.JPanel topPanel;
     private javax.swing.JTable turnosTable;
+    private javax.swing.JMenuItem verProductosMenuItem;
     // End of variables declaration//GEN-END:variables
 }
