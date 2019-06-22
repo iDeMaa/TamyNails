@@ -1,16 +1,28 @@
 package gui;
 
+import java.awt.Image;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
+
 /**
  *
  * @author demaa
  */
 public class MainMenu extends javax.swing.JFrame {
 
-    /**
-     * Creates new form MainMenu
-     */
     public MainMenu() {
         initComponents();
+        String userdir = System.getProperty("user.dir");
+        File pathToFile = new File(userdir + "/resources/logo.jpg");
+        try {
+            Image image = ImageIO.read(pathToFile);
+            this.setIconImage(image);
+        } catch (IOException ex) {
+            Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @SuppressWarnings("unchecked")

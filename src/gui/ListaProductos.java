@@ -2,6 +2,12 @@ package gui;
 
 import entidades.Cliente;
 import gestion.TamyNails;
+import java.awt.Image;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.table.DefaultTableModel;
 import recursos.Esmalte;
 import recursos.Herramienta;
@@ -15,7 +21,7 @@ import recursos.Removedor;
 public class ListaProductos extends javax.swing.JDialog {
 
     private int tablesOpened = 0;
-    
+
     public ListaProductos(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -24,26 +30,36 @@ public class ListaProductos extends javax.swing.JDialog {
         this.jScrollPane3.setVisible(false);
         this.jScrollPane4.setVisible(false);
         this.setSize(157, 530);
+        String userdir = System.getProperty("user.dir");
+        File pathToFile = new File(userdir + "/resources/logo.jpg");
+        try {
+            Image image = ImageIO.read(pathToFile);
+            this.setIconImage(image);
+        } catch (IOException ex) {
+            Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private void cargarDatos() {
         DefaultTableModel modelE = (DefaultTableModel) esmaltesTable.getModel();
         DefaultTableModel modelR = (DefaultTableModel) removedoresTable.getModel();
         DefaultTableModel modelH = (DefaultTableModel) herramientasTable.getModel();
+        modelE.setRowCount(0);
+        modelR.setRowCount(0);
+        modelH.setRowCount(0);
         for (Producto producto : TamyNails.getListaProductos()) {
-            System.out.println(producto.getClass().getSimpleName());
             switch (producto.getClass().getSimpleName()) {
                 case "Esmalte":
                     Esmalte esmalte = (Esmalte) producto;
-                    modelE.addRow(new Object[]{esmalte.getTipo(), esmalte.getColor(), esmalte.getEfecto(), esmalte.getPrecio()});
+                    modelE.addRow(new Object[]{esmalte.getTipo(), esmalte.getColor(), esmalte.getEfecto(), "$" + esmalte.getPrecio(), esmalte.getCantidad()});
                     break;
                 case "Herramienta":
                     Herramienta herramienta = (Herramienta) producto;
-                    modelH.addRow(new Object[]{herramienta.getTipo(), herramienta.getPrecio()});
+                    modelH.addRow(new Object[]{herramienta.getTipo(), "$" + herramienta.getPrecio(), herramienta.getCantidad()});
                     break;
                 case "Removedor":
                     Removedor removedor = (Removedor) producto;
-                    modelR.addRow(new Object[]{removedor.getTipo(), removedor.getPrecio()});
+                    modelR.addRow(new Object[]{removedor.getTipo(), "$" + removedor.getPrecio(), removedor.getCantidad()});
                     break;
             }
         }
@@ -54,6 +70,7 @@ public class ListaProductos extends javax.swing.JDialog {
     private void initComponents() {
 
         topPanel = new javax.swing.JPanel();
+        addProductButton = new javax.swing.JButton();
         herramientasButton = new javax.swing.JToggleButton();
         removedoresButton = new javax.swing.JToggleButton();
         esmaltesButton = new javax.swing.JToggleButton();
@@ -65,18 +82,39 @@ public class ListaProductos extends javax.swing.JDialog {
         removedoresTable = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Tamy Nails - Lista de productos");
+        addWindowFocusListener(new java.awt.event.WindowFocusListener() {
+            public void windowGainedFocus(java.awt.event.WindowEvent evt) {
+                formWindowGainedFocus(evt);
+            }
+            public void windowLostFocus(java.awt.event.WindowEvent evt) {
+            }
+        });
 
         topPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        addProductButton.setText("<html><center>Añadir<br />producto</center></html>");
+        addProductButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addProductButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout topPanelLayout = new javax.swing.GroupLayout(topPanel);
         topPanel.setLayout(topPanelLayout);
         topPanelLayout.setHorizontalGroup(
             topPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGroup(topPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(addProductButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         topPanelLayout.setVerticalGroup(
             topPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 73, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, topPanelLayout.createSequentialGroup()
+                .addContainerGap(8, Short.MAX_VALUE)
+                .addComponent(addProductButton, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         herramientasButton.setText("Herramientas");
@@ -111,7 +149,7 @@ public class ListaProductos extends javax.swing.JDialog {
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.Double.class, java.lang.Object.class
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
                 false, false, false, false, false
@@ -136,7 +174,7 @@ public class ListaProductos extends javax.swing.JDialog {
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.Double.class, java.lang.Object.class
+                java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
                 false, false, false
@@ -161,7 +199,7 @@ public class ListaProductos extends javax.swing.JDialog {
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.Double.class, java.lang.Object.class
+                java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
                 false, false, false
@@ -222,15 +260,15 @@ public class ListaProductos extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void cambiarTamanio(){
-        if(this.tablesOpened == 0){
+    private void cambiarTamanio() {
+        if (this.tablesOpened == 0) {
             this.setSize(157, 530);
         } else {
             //Cambiar.
-            this.setSize(800+tablesOpened, 600);
+            this.setSize(800 + tablesOpened, 600);
         }
     }
-    
+
     private void esmaltesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_esmaltesButtonActionPerformed
         if (esmaltesButton.isSelected()) {
             this.tablesOpened++;
@@ -264,7 +302,19 @@ public class ListaProductos extends javax.swing.JDialog {
         cambiarTamanio();
     }//GEN-LAST:event_herramientasButtonActionPerformed
 
+    private void addProductButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addProductButtonActionPerformed
+        NuevoProducto nuevoProducto = new NuevoProducto(null, true);
+        nuevoProducto.setVisible(true);
+    }//GEN-LAST:event_addProductButtonActionPerformed
+
+    private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowGainedFocus
+        // TODO add your handling code here:
+        this.cargarDatos();
+    }//GEN-LAST:event_formWindowGainedFocus
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addProductButton;
     private javax.swing.JToggleButton esmaltesButton;
     private javax.swing.JTable esmaltesTable;
     private javax.swing.JToggleButton herramientasButton;

@@ -6,6 +6,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import recursos.Esmalte;
@@ -84,44 +86,71 @@ public abstract class ManejoDB {
         try {
 
             //TODO: Arreglar que no puedo crear las dos tablas en una sola consulta. SQLSyntaxError
-            String query = "CREATE TABLE IF NOT EXISTS clientes (\n"
-                    + "	id_cliente int(11) NOT NULL,\n"
-                    + "	nombre varchar(45) DEFAULT NULL,\n"
-                    + " apellido varchar(45) DEFAULT NULL,\n"
-                    + "	telefono varchar(45) DEFAULT NULL,\n"
-                    + " PRIMARY KEY (id_cliente)\n"
-                    + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;";
+            String query = "CREATE TABLE IF NOT EXISTS `tamynails`.`clientes` (\n"
+                    + "  `id_cliente` INT(11) NOT NULL,\n"
+                    + "  `nombre` VARCHAR(45) NULL DEFAULT NULL,\n"
+                    + "  `apellido` VARCHAR(45) NULL DEFAULT NULL,\n"
+                    + "  `telefono` VARCHAR(45) NULL DEFAULT NULL,\n"
+                    + "  PRIMARY KEY (`id_cliente`))\n"
+                    + "ENGINE = InnoDB\n"
+                    + "DEFAULT CHARACTER SET = utf8mb4\n"
+                    + "COLLATE = utf8mb4_0900_ai_ci;";
             instruccion.execute(query);
-            query = "CREATE TABLE IF NOT EXISTS historial_turnos(\n"
-                    + "	id_turno int(11) NOT NULL,\n"
-                    + "    id_cliente int(11) NOT NULL,\n"
-                    + "    fecha_hora timestamp NOT NULL,\n"
-                    + "    monto int(11) DEFAULT NULL,\n"
-                    + "    descripcion varchar(90) DEFAULT NULL,\n"
-                    + "    realizado boolean DEFAULT FALSE,\n"
-                    + "    PRIMARY KEY (id_turno),\n"
-                    + "    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente) ON DELETE CASCADE\n"
-                    + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;";
+            query = "CREATE TABLE IF NOT EXISTS `tamynails`.`turnos` (\n"
+                    + "  `id_turno` INT(11) NOT NULL,\n"
+                    + "  `id_cliente` INT(11) NOT NULL,\n"
+                    + "  `fecha_hora` TIMESTAMP NOT NULL,\n"
+                    + "  `monto` INT(11) NULL DEFAULT NULL,\n"
+                    + "  `descripcion` VARCHAR(90) NULL DEFAULT NULL,\n"
+                    + "  `realizado` TINYINT(1) NULL DEFAULT '0',\n"
+                    + "  PRIMARY KEY (`id_turno`),\n"
+                    + "  INDEX `id_cliente` (`id_cliente` ASC) VISIBLE,\n"
+                    + "  CONSTRAINT `historial_turnos_ibfk_1`\n"
+                    + "    FOREIGN KEY (`id_cliente`)\n"
+                    + "    REFERENCES `tamynails`.`clientes` (`id_cliente`)\n"
+                    + "    ON DELETE CASCADE)\n"
+                    + "ENGINE = InnoDB\n"
+                    + "DEFAULT CHARACTER SET = utf8mb4\n"
+                    + "COLLATE = utf8mb4_0900_ai_ci;";
             instruccion.execute(query);
-            query = "CREATE TABLE IF NOT EXISTS esmaltes (\n"
-                    + "	id_producto int(11) NOT NULL,\n"
-                    + "    tipo varchar(45) NOT NULL,\n"
-                    + "    color varchar(45) NOT NULL,\n"
-                    + "    efecto varchar(45) NOT NULL,\n"
-                    + "    precio double NOT NULL\n"
-                    + ") ENGINE=InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;";
+            query = "CREATE TABLE IF NOT EXISTS `tamynails`.`productos` (\n"
+                    + "  `id_producto` INT(11) NOT NULL,\n"
+                    + "  `tipo` VARCHAR(90) NOT NULL,\n"
+                    + "  `precio` DOUBLE NOT NULL,\n"
+                    + "  `cantidad` INT(11) NULL,\n"
+                    + "  PRIMARY KEY (`id_producto`))\n"
+                    + "ENGINE = InnoDB\n"
+                    + "DEFAULT CHARACTER SET = utf8mb4\n"
+                    + "COLLATE = utf8mb4_0900_ai_ci;";
             instruccion.execute(query);
-            query = "CREATE TABLE IF NOT EXISTS herramientas (\n"
-                    + "	id_producto int(11) NOT NULL,\n"
-                    + "    tipo varchar(45) NOT NULL,\n"
-                    + "    precio double NOT NULL\n"
-                    + ") ENGINE=InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;";
+            query = "CREATE TABLE IF NOT EXISTS `tamynails`.`esmaltes` (\n"
+                    + "  `color` VARCHAR(20) NOT NULL,\n"
+                    + "  `efecto` VARCHAR(20) NULL,\n"
+                    + "  `productos_id_producto` INT(11) NOT NULL,\n"
+                    + "  PRIMARY KEY (`productos_id_producto`),\n"
+                    + "  CONSTRAINT `fk_esmaltes_productos`\n"
+                    + "    FOREIGN KEY (`productos_id_producto`)\n"
+                    + "    REFERENCES `tamynails`.`productos` (`id_producto`)\n"
+                    + "    ON DELETE NO ACTION\n"
+                    + "    ON UPDATE NO ACTION)\n"
+                    + "ENGINE = InnoDB;";
             instruccion.execute(query);
-            query = "CREATE TABLE IF NOT EXISTS removedores (\n"
-                    + "	id_producto int(11) NOT NULL,\n"
-                    + "    tipo varchar(45) NOT NULL,\n"
-                    + "    precio double NOT NULL\n"
-                    + ") ENGINE=InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;";
+            query = "CREATE TABLE IF NOT EXISTS `tamynails`.`productos_turnos` (\n"
+                    + "  `productos_id_producto` INT(11) NOT NULL,\n"
+                    + "  `turnos_id_turno` INT(11) NOT NULL,\n"
+                    + "  PRIMARY KEY (`productos_id_producto`, `turnos_id_turno`),\n"
+                    + "  INDEX `fk_productos_turnos_turnos1_idx` (`turnos_id_turno` ASC) VISIBLE,\n"
+                    + "  CONSTRAINT `fk_productos_turnos_productos1`\n"
+                    + "    FOREIGN KEY (`productos_id_producto`)\n"
+                    + "    REFERENCES `tamynails`.`productos` (`id_producto`)\n"
+                    + "    ON DELETE NO ACTION\n"
+                    + "    ON UPDATE NO ACTION,\n"
+                    + "  CONSTRAINT `fk_productos_turnos_turnos1`\n"
+                    + "    FOREIGN KEY (`turnos_id_turno`)\n"
+                    + "    REFERENCES `tamynails`.`turnos` (`id_turno`)\n"
+                    + "    ON DELETE NO ACTION\n"
+                    + "    ON UPDATE NO ACTION)\n"
+                    + "ENGINE = InnoDB;";
             instruccion.execute(query);
         } catch (SQLException e) {
             System.out.println("Hubo un error con la consulta: " + e.getMessage());
@@ -142,10 +171,10 @@ public abstract class ManejoDB {
             }
 
             //OBTENCIÓN DE TURNOS Y ASIGNACIÓN DE TURNOS A CLIENTES
-            query = "SELECT ht.id_turno, c.id_cliente, ht.descripcion, ht.fecha_hora, ht.monto, ht.realizado FROM clientes c "
-                    + "INNER JOIN historial_turnos ht "
-                    + "WHERE c.id_cliente=ht.id_cliente "
-                    + "ORDER BY ht.id_turno;";
+            query = "SELECT t.id_turno, c.id_cliente, t.descripcion, t.fecha_hora, t.monto, t.realizado FROM clientes c "
+                    + "INNER JOIN turnos t "
+                    + "WHERE c.id_cliente=t.id_cliente "
+                    + "ORDER BY t.id_turno;";
             result = ManejoDB.ejecutarQuery(query, true);
             while (result.next()) {
                 String[] fechaArray = result.getString(4).split(" ")[0].split("-");
@@ -169,21 +198,32 @@ public abstract class ManejoDB {
                 }
             }
 
-            query = "SELECT * FROM esmaltes;";
+            query = "SELECT p.id_producto, p.tipo, e.color, e.efecto, p.precio, p.cantidad FROM esmaltes e JOIN productos p WHERE p.id_producto = e.productos_id_producto ORDER BY p.id_producto;";
             result = ManejoDB.ejecutarQuery(query, true);
-            while(result.next()){
-                TamyNails.getListaProductos().add(new Esmalte(result.getInt(1), result.getString(2), result.getDouble(5), result.getString(3), result.getString(4)));
+            while (result.next()) {
+                TamyNails.getListaProductos().add(new Esmalte(result.getInt(1), result.getString(2), result.getDouble(5), result.getInt(6), result.getString(3), result.getString(4)));
             }
-            query = "SELECT * FROM removedores;";
+            query = "SELECT * FROM productos ORDER BY productos.id_producto;";
             result = ManejoDB.ejecutarQuery(query, true);
-            while(result.next()){
-                TamyNails.getListaProductos().add(new Removedor(result.getInt(1), result.getString(2), result.getDouble(3)));
+            while (result.next()) {
+                String nombre = result.getString(2);
+                if (nombre.split(" ")[0].equalsIgnoreCase("Herramienta")) {
+                    String tipo = result.getString(2).substring(12);
+                    TamyNails.getListaProductos().add(new Herramienta(result.getInt(1), tipo, result.getDouble(3), result.getInt(4)));
+                } else if (nombre.split(" ")[0].equalsIgnoreCase("Removedor")) {
+                    String tipo = result.getString(2).substring(10);
+                    TamyNails.getListaProductos().add(new Removedor(result.getInt(1), tipo, result.getDouble(3), result.getInt(4)));
+                }
             }
-            query = "SELECT * FROM herramientas;";
+            Collections.sort(TamyNails.getListaProductos());
+            
+            query = "SELECT * FROM productos_turnos";
             result = ManejoDB.ejecutarQuery(query, true);
+            System.out.println(TamyNails.getListaTurnos().size()+"\t"+TamyNails.getListaProductos().size());
             while(result.next()){
-                TamyNails.getListaProductos().add(new Herramienta(result.getInt(1), result.getString(2), result.getDouble(3)));
+                TamyNails.getListaTurnos().get(result.getInt(2)-1).getListaProductos().add(TamyNails.getListaProductos().get(result.getInt(1)-1));
             }
+            
         } catch (SQLException ex) {
             Logger.getLogger(ManejoDB.class.getName()).log(Level.SEVERE, null, ex);
         }

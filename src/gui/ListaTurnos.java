@@ -2,7 +2,13 @@ package gui;
 
 import gestion.TamyNails;
 import gestion.Turno;
+import java.awt.Image;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import recursos.Esmalte;
@@ -19,6 +25,14 @@ public class ListaTurnos extends javax.swing.JDialog {
     public ListaTurnos(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        String userdir = System.getProperty("user.dir");
+        File pathToFile = new File(userdir + "/resources/logo.jpg");
+        try {
+            Image image = ImageIO.read(pathToFile);
+            this.setIconImage(image);
+        } catch (IOException ex) {
+            Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public ListaTurnos(java.awt.Frame parent, boolean modal, String nombreCliente) {
@@ -78,6 +92,13 @@ public class ListaTurnos extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Tamy Nails - Lista de turnos");
+        addWindowFocusListener(new java.awt.event.WindowFocusListener() {
+            public void windowGainedFocus(java.awt.event.WindowEvent evt) {
+                formWindowGainedFocus(evt);
+            }
+            public void windowLostFocus(java.awt.event.WindowEvent evt) {
+            }
+        });
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowOpened(java.awt.event.WindowEvent evt) {
                 formWindowOpened(evt);
@@ -225,9 +246,8 @@ public class ListaTurnos extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void realizadoMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_realizadoMenuItemActionPerformed
-        //TODO: Marcar/Desmarcar como realizado un turno
-        TamyNails.cambiarEstadoTurno((int) turnosTable.getValueAt(turnosTable.getSelectedRow(), 0));
-        this.updateTable();
+        CerrarTurno cerrarTurno = new CerrarTurno(null, true, (int) turnosTable.getValueAt(turnosTable.getSelectedRow(), 0));
+        cerrarTurno.setVisible(true);
     }//GEN-LAST:event_realizadoMenuItemActionPerformed
 
     private void eliminarTurnoMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eliminarTurnoMenuItem1ActionPerformed
@@ -280,27 +300,32 @@ public class ListaTurnos extends javax.swing.JDialog {
     }//GEN-LAST:event_dataButtonActionPerformed
 
     private void verProductosMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verProductosMenuItemActionPerformed
-        // TODO add your handling code here:
-        List<Producto> lista = TamyNails.obtenerProductosUsados((int) turnosTable.getValueAt(turnosTable.getSelectedRow(), 0));
-        String mensaje = "";
-        for(Producto producto : lista){
-            switch(producto.getClass().getSimpleName()){
-                case "Esmalte":
-                    Esmalte esmalte = (Esmalte) producto;
-                    mensaje += esmalte.getTipo() + " " + esmalte.getColor().toLowerCase() + "\n";
-                    break;
-                case "Herramienta":
-                    Herramienta herramienta = (Herramienta) producto;
-                    mensaje += herramienta.getTipo() + "\n";
-                    break;
-                case "Removedor":
-                    Removedor removedor = (Removedor) producto;
-                    mensaje += "Removedor "+removedor.getTipo().toLowerCase() + "\n";
-                    break;
+        if ((boolean) turnosTable.getValueAt(turnosTable.getSelectedRow(), 6) == true) {
+            List<Producto> lista = TamyNails.obtenerProductosUsados((int) turnosTable.getValueAt(turnosTable.getSelectedRow(), 0));
+            String mensaje = "";
+            for (Producto producto : lista) {
+                switch (producto.getClass().getSimpleName()) {
+                    case "Esmalte":
+                        Esmalte esmalte = (Esmalte) producto;
+                        mensaje += esmalte.getTipo() + " " + esmalte.getColor().toLowerCase() + "\n";
+                        break;
+                    case "Herramienta":
+                        Herramienta herramienta = (Herramienta) producto;
+                        mensaje += herramienta.getTipo() + "\n";
+                        break;
+                    case "Removedor":
+                        Removedor removedor = (Removedor) producto;
+                        mensaje += "Removedor " + removedor.getTipo().toLowerCase() + "\n";
+                        break;
+                }
             }
+            JOptionPane.showMessageDialog(null, mensaje, "Tamy Nails - Productos usados en turno #" + (int) turnosTable.getValueAt(turnosTable.getSelectedRow(), 0), JOptionPane.INFORMATION_MESSAGE);
         }
-        JOptionPane.showMessageDialog(null, mensaje, "Tamy Nails - Productos usados en turno #"+(int) turnosTable.getValueAt(turnosTable.getSelectedRow(), 0), JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_verProductosMenuItemActionPerformed
+
+    private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowGainedFocus
+        this.updateTable();
+    }//GEN-LAST:event_formWindowGainedFocus
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buscarButton;

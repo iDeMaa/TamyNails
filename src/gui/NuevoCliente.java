@@ -1,6 +1,12 @@
 package gui;
 
 import gestion.TamyNails;
+import java.awt.Image;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 
 /**
  *
@@ -11,6 +17,14 @@ public class NuevoCliente extends javax.swing.JDialog {
     public NuevoCliente(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        String userdir = System.getProperty("user.dir");
+        File pathToFile = new File(userdir + "/resources/logo.jpg");
+        try {
+            Image image = ImageIO.read(pathToFile);
+            this.setIconImage(image);
+        } catch (IOException ex) {
+            Logger.getLogger(MainMenu.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @SuppressWarnings("unchecked")

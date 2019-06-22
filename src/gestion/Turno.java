@@ -1,6 +1,9 @@
 package gestion;
 
 import entidades.Cliente;
+import java.util.ArrayList;
+import java.util.List;
+import recursos.Producto;
 
 /**
  *
@@ -15,6 +18,15 @@ public class Turno {
     private String hora;
     private int monto;
     private boolean realizado = false;
+    private List<Producto> listaProductos = new ArrayList<>();
+
+    public List<Producto> getListaProductos() {
+        return listaProductos;
+    }
+
+    public void setListaProductos(List<Producto> listaProductos) {
+        this.listaProductos = listaProductos;
+    }
 
     public boolean isRealizado() {
         return realizado;

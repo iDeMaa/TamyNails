@@ -12,7 +12,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import recursos.Esmalte;
+import recursos.Herramienta;
 import recursos.Producto;
+import recursos.Removedor;
 
 /**
  *
@@ -150,16 +153,16 @@ public abstract class TamyNails {
                 }
                 fecha += " " + hora + ":00";
 
-                String query = "INSERT INTO historial_turnos(id_turno, id_cliente, fecha_hora, monto, descripcion)"
+                String query = "INSERT INTO turnos(id_turno, id_cliente, fecha_hora, monto, descripcion)"
                         + "VALUES (" + turno.getId() + ", " + idCliente + ", \"" + fecha + "\", " + monto + ", \"" + desc + "\");";
 
                 if (ManejoDB.ejecutarQuery(query) > 0) {
                     cliente.asignarTurno(turno);
                     listaTurnos.add(turno);
                 }
-                for (Turno turnos : listaTurnos) {
+                listaTurnos.forEach((turnos) -> {
                     System.out.println("ID: " + turnos.getId() + "\n Cliente: " + turnos.getCliente().getNombre() + " " + turnos.getCliente().getApellido());
-                }
+                });
             }
         }
     }
@@ -172,7 +175,7 @@ public abstract class TamyNails {
     public static void eliminarTurno(int id) {
         int respuesta = JOptionPane.showConfirmDialog(null, "¿Estás segura que queres borrar el turno? Los datos no se pueden recuperar", "¿Estás segura?", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (respuesta == JOptionPane.YES_OPTION) {
-            String query = "DELETE FROM historial_turnos WHERE id_turno = " + id + ";";
+            String query = "DELETE FROM turnos WHERE id_turno = " + id + ";";
             if (ManejoDB.ejecutarQuery(query) > 0) {
                 listaTurnos.remove(id - 1);
             }
@@ -183,12 +186,17 @@ public abstract class TamyNails {
      * Cambia el estado de un turno
      *
      * @param id ID del turno
+     * @param q query a ejecutar para la relación productos-turnos
+     * @param lProd Lista de productos usados en el turno
      */
-    public static void cambiarEstadoTurno(int id) {
+    public static void cambiarEstadoTurno(int id, String q, List<Producto> lProd) {
         Turno turno = listaTurnos.get(id - 1);
-        String query = "UPDATE historial_turnos SET realizado = " + !turno.isRealizado() + " WHERE id_turno=" + turno.getId() + ";";;
+        String query = "UPDATE turnos SET realizado = " + !turno.isRealizado() + " WHERE id_turno=" + turno.getId() + ";";;
         if (ManejoDB.ejecutarQuery(query) > 0) {
             turno.setRealizado(!turno.isRealizado());
+            if (ManejoDB.ejecutarQuery(q) > 0) {
+                turno.setListaProductos(lProd);
+            }
         }
     }
 
@@ -228,32 +236,32 @@ public abstract class TamyNails {
         String sql = "";
         switch (categoria) {
             case 0: //ID_TURNO
-                sql = "SELECT ht.id_turno, c.nombre, c.apellido, ht.descripcion, ht.fecha_hora, ht.monto, ht.realizado "
-                        + "FROM clientes c INNER JOIN historial_turnos ht "
-                        + "WHERE c.id_cliente=ht.id_cliente AND ht.id_turno=" + busqueda + ";";
+                sql = "SELECT t.id_turno, c.nombre, c.apellido, t.descripcion, t.fecha_hora, t.monto, t.realizado "
+                        + "FROM clientes c INNER JOIN turnos t "
+                        + "WHERE c.id_cliente=t.id_cliente AND t.id_turno=" + busqueda + ";";
                 break;
             case 1: //NOMBRE CLIENTE
                 if (busqueda.length() == 0) {
-                    sql = "SELECT ht.id_turno, c.nombre, c.apellido, ht.descripcion, ht.fecha_hora, ht.monto, ht.realizado \n"
-                            + "FROM historial_turnos ht INNER JOIN  clientes c\n"
-                            + "WHERE c.id_cliente=ht.id_cliente \n"
+                    sql = "SELECT t.id_turno, c.nombre, c.apellido, t.descripcion, t.fecha_hora, t.monto, t.realizado \n"
+                            + "FROM turnos t INNER JOIN  clientes c\n"
+                            + "WHERE c.id_cliente=t.id_cliente \n"
                             + "ORDER BY c.nombre;";
                     break;
                 } else if (busqueda.split(" ").length > 1) {
                     String nombre[] = busqueda.split(" ");
-                    sql = "SELECT ht.id_turno, c.nombre, c.apellido, ht.descripcion, ht.fecha_hora, ht.monto, ht.realizado "
-                            + "FROM clientes c INNER JOIN historial_turnos ht "
-                            + "WHERE c.id_cliente=ht.id_cliente AND c.nombre=\"" + nombre[0] + "\" AND c.apellido=\"" + nombre[1] + "\";";
+                    sql = "SELECT t.id_turno, c.nombre, c.apellido, t.descripcion, t.fecha_hora, t.monto, t.realizado "
+                            + "FROM clientes c INNER JOIN turnos t "
+                            + "WHERE c.id_cliente=t.id_cliente AND c.nombre=\"" + nombre[0] + "\" AND c.apellido=\"" + nombre[1] + "\";";
                 } else {
-                    sql = "SELECT ht.id_turno, c.nombre, c.apellido, ht.descripcion, ht.fecha_hora, ht.monto, ht.realizado "
-                            + "FROM clientes c INNER JOIN historial_turnos ht "
-                            + "WHERE c.id_cliente=ht.id_cliente AND c.nombre=\"" + busqueda + "\";";
+                    sql = "SELECT t.id_turno, c.nombre, c.apellido, t.descripcion, t.fecha_hora, t.monto, t.realizado "
+                            + "FROM clientes c INNER JOIN turnos t "
+                            + "WHERE c.id_cliente=t.id_cliente AND c.nombre=\"" + busqueda + "\";";
                 }
                 break;
             case 2: //DESCRIPCION
-                sql = "SELECT ht.id_turno, c.nombre, c.apellido, ht.descripcion, ht.fecha_hora, ht.monto, ht.realizado "
-                        + "FROM clientes c INNER JOIN historial_turnos ht "
-                        + "WHERE c.id_cliente=ht.id_cliente AND ht.descripcion LIKE \"%" + busqueda + "%\";";
+                sql = "SELECT t.id_turno, c.nombre, c.apellido, t.descripcion, t.fecha_hora, t.monto, t.realizado "
+                        + "FROM clientes c INNER JOIN turnos t "
+                        + "WHERE c.id_cliente=t.id_cliente AND t.descripcion LIKE \"%" + busqueda + "%\";";
                 break;
             case 3: //FECHA
                 String[] fechaArray = busqueda.split(" ")[0].split("/");
@@ -269,80 +277,80 @@ public abstract class TamyNails {
                 fecha = fecha.toLowerCase();
                 System.out.println(fecha.length());
                 if (fecha.length() == 0) {
-                    sql = "SELECT ht.id_turno, c.nombre, c.apellido, ht.descripcion, ht.fecha_hora, ht.monto, ht.realizado \n"
-                            + "FROM historial_turnos ht INNER JOIN  clientes c\n"
-                            + "WHERE c.id_cliente=ht.id_cliente \n"
-                            + "ORDER BY ht.fecha_hora;";
+                    sql = "SELECT t.id_turno, c.nombre, c.apellido, t.descripcion, t.fecha_hora, t.monto, t.realizado \n"
+                            + "FROM turnos t INNER JOIN  clientes c\n"
+                            + "WHERE c.id_cliente=t.id_cliente \n"
+                            + "ORDER BY t.fecha_hora;";
                     break;
                 } else if (fecha.charAt(fecha.length() - 3) == '>') {
                     StringBuilder fechaSB = new StringBuilder(fecha);
                     fechaSB.deleteCharAt(8);
-                    sql = "SELECT ht.id_turno, c.nombre, c.apellido, ht.descripcion, ht.fecha_hora, ht.monto, ht.realizado \n"
-                            + "FROM historial_turnos ht INNER JOIN  clientes c\n"
-                            + "WHERE c.id_cliente=ht.id_cliente AND ht.fecha_hora >= \"" + fechaSB + "%\"\n"
-                            + "ORDER BY ht.fecha_hora;";
+                    sql = "SELECT t.id_turno, c.nombre, c.apellido, t.descripcion, t.fecha_hora, t.monto, t.realizado \n"
+                            + "FROM turnos t INNER JOIN  clientes c\n"
+                            + "WHERE c.id_cliente=t.id_cliente AND t.fecha_hora >= \"" + fechaSB + "%\"\n"
+                            + "ORDER BY t.fecha_hora;";
                     break;
                 } else if (fecha.charAt(fecha.length() - 3) == '<') {
                     StringBuilder fechaSB = new StringBuilder(fecha);
                     fechaSB.deleteCharAt(8);
-                    sql = "SELECT ht.id_turno, c.nombre, c.apellido, ht.descripcion, ht.fecha_hora, ht.monto, ht.realizado \n"
-                            + "FROM historial_turnos ht INNER JOIN  clientes c\n"
-                            + "WHERE c.id_cliente=ht.id_cliente AND ht.fecha_hora <= \"" + fechaSB + "%\"\n"
-                            + "ORDER BY ht.fecha_hora;";
+                    sql = "SELECT t.id_turno, c.nombre, c.apellido, t.descripcion, t.fecha_hora, t.monto, t.realizado \n"
+                            + "FROM turnos t INNER JOIN  clientes c\n"
+                            + "WHERE c.id_cliente=t.id_cliente AND t.fecha_hora <= \"" + fechaSB + "%\"\n"
+                            + "ORDER BY t.fecha_hora;";
                     break;
                 } else if (fecha.contains(">") && fecha.contains("hoy")) {
                     Timestamp ts = new Timestamp(System.currentTimeMillis());
                     fecha = ts.toString().split(" ")[0];
-                    sql = "SELECT ht.id_turno, c.nombre, c.apellido, ht.descripcion, ht.fecha_hora, ht.monto, ht.realizado \n"
-                            + "FROM historial_turnos ht INNER JOIN  clientes c\n"
-                            + "WHERE c.id_cliente=ht.id_cliente AND ht.fecha_hora > \"" + fecha + "%\"\n"
-                            + "ORDER BY ht.fecha_hora;";
+                    sql = "SELECT t.id_turno, c.nombre, c.apellido, t.descripcion, t.fecha_hora, t.monto, t.realizado \n"
+                            + "FROM turnos t INNER JOIN  clientes c\n"
+                            + "WHERE c.id_cliente=t.id_cliente AND t.fecha_hora > \"" + fecha + "%\"\n"
+                            + "ORDER BY t.fecha_hora;";
                     break;
                 } else if (fecha.contains("<") && fecha.contains("hoy")) {
                     Timestamp ts = new Timestamp(System.currentTimeMillis());
                     fecha = ts.toString().split(" ")[0];
-                    sql = "SELECT ht.id_turno, c.nombre, c.apellido, ht.descripcion, ht.fecha_hora, ht.monto, ht.realizado \n"
-                            + "FROM historial_turnos ht INNER JOIN  clientes c\n"
-                            + "WHERE c.id_cliente=ht.id_cliente AND ht.fecha_hora < \"" + fecha + "%\"\n"
-                            + "ORDER BY ht.fecha_hora;";
+                    sql = "SELECT t.id_turno, c.nombre, c.apellido, t.descripcion, t.fecha_hora, t.monto, t.realizado \n"
+                            + "FROM turnos t INNER JOIN  clientes c\n"
+                            + "WHERE c.id_cliente=t.id_cliente AND t.fecha_hora < \"" + fecha + "%\"\n"
+                            + "ORDER BY t.fecha_hora;";
                     break;
                 } else if (fecha.equals("hoy")) {
                     Timestamp ts = new Timestamp(System.currentTimeMillis());
                     fecha = ts.toString().split(" ")[0];
-                    sql = "SELECT ht.id_turno, c.nombre, c.apellido, ht.descripcion, ht.fecha_hora, ht.monto, ht.realizado \n"
-                            + "FROM historial_turnos ht INNER JOIN  clientes c\n"
-                            + "WHERE c.id_cliente=ht.id_cliente AND ht.fecha_hora LIKE \"" + fecha + "%\"\n"
-                            + "ORDER BY ht.fecha_hora;";
+                    sql = "SELECT t.id_turno, c.nombre, c.apellido, t.descripcion, t.fecha_hora, t.monto, t.realizado \n"
+                            + "FROM turnos t INNER JOIN  clientes c\n"
+                            + "WHERE c.id_cliente=t.id_cliente AND t.fecha_hora LIKE \"" + fecha + "%\"\n"
+                            + "ORDER BY t.fecha_hora;";
                     break;
                 } else {
-                    sql = "SELECT ht.id_turno, c.nombre, c.apellido, ht.descripcion, ht.fecha_hora, ht.monto, ht.realizado "
-                            + "FROM clientes c INNER JOIN historial_turnos ht "
-                            + "WHERE c.id_cliente=ht.id_cliente AND ht.fecha_hora LIKE \"" + fecha + "%\"\n"
-                            + "ORDER BY ht.fecha_hora;";
+                    sql = "SELECT t.id_turno, c.nombre, c.apellido, t.descripcion, t.fecha_hora, t.monto, t.realizado "
+                            + "FROM clientes c INNER JOIN turnos t "
+                            + "WHERE c.id_cliente=t.id_cliente AND t.fecha_hora LIKE \"" + fecha + "%\"\n"
+                            + "ORDER BY t.fecha_hora;";
                     break;
                 }
             case 4: //HORA
                 String hora = busqueda + ":00";
-                sql = "SELECT ht.id_turno, c.nombre, c.apellido, ht.descripcion, ht.fecha_hora, ht.monto, ht.realizado "
-                        + "FROM clientes c INNER JOIN historial_turnos ht "
-                        + "WHERE c.id_cliente=ht.id_cliente AND TIME(ht.fecha_hora) IN (\"" + hora + "\");";
+                sql = "SELECT t.id_turno, c.nombre, c.apellido, t.descripcion, t.fecha_hora, t.monto, t.realizado "
+                        + "FROM clientes c INNER JOIN turnos t "
+                        + "WHERE c.id_cliente=t.id_cliente AND TIME(t.fecha_hora) IN (\"" + hora + "\");";
                 break;
             case 5: //MONTO
                 String monto = busqueda.replace("$", "");
-                sql = "SELECT ht.id_turno, c.nombre, c.apellido, ht.descripcion, ht.fecha_hora, ht.monto, ht.realizado "
-                        + "FROM clientes c INNER JOIN historial_turnos ht "
-                        + "WHERE c.id_cliente=ht.id_cliente AND ht.monto=" + monto + ";";
+                sql = "SELECT t.id_turno, c.nombre, c.apellido, t.descripcion, t.fecha_hora, t.monto, t.realizado "
+                        + "FROM clientes c INNER JOIN turnos t "
+                        + "WHERE c.id_cliente=t.id_cliente AND t.monto=" + monto + ";";
                 break;
 
             case 6: //REALIZADO
                 if (busqueda.equalsIgnoreCase("Si")) {
-                    sql = "SELECT ht.id_turno, c.nombre, c.apellido, ht.descripcion, ht.fecha_hora, ht.monto, ht.realizado "
-                            + "FROM clientes c INNER JOIN historial_turnos ht "
-                            + "WHERE c.id_cliente=ht.id_cliente AND ht.realizado=true;";
+                    sql = "SELECT t.id_turno, c.nombre, c.apellido, t.descripcion, t.fecha_hora, t.monto, t.realizado "
+                            + "FROM clientes c INNER JOIN turnos t "
+                            + "WHERE c.id_cliente=t.id_cliente AND t.realizado=true;";
                 } else if (busqueda.equalsIgnoreCase("No")) {
-                    sql = "SELECT ht.id_turno, c.nombre, c.apellido, ht.descripcion, ht.fecha_hora, ht.monto, ht.realizado "
-                            + "FROM clientes c INNER JOIN historial_turnos ht "
-                            + "WHERE c.id_cliente=ht.id_cliente AND ht.realizado=false;";
+                    sql = "SELECT t.id_turno, c.nombre, c.apellido, t.descripcion, t.fecha_hora, t.monto, t.realizado "
+                            + "FROM clientes c INNER JOIN turnos t "
+                            + "WHERE c.id_cliente=t.id_cliente AND t.realizado=false;";
                 }
                 break;
         }
@@ -362,47 +370,93 @@ public abstract class TamyNails {
         return aux;
     }
 
+    /**
+     * Obtiene una lista con los productos usados en un turno
+     *
+     * @param idTurno ID del turno
+     * @return Lista con los productos
+     */
     public static List<Producto> obtenerProductosUsados(int idTurno) {
         List<Producto> lista = new ArrayList<>();
-        List<Producto> aux = listaProductos;
+
+        String query = "SELECT p.id_producto FROM productos_turnos pt JOIN productos p WHERE p.id_producto = pt.productos_id_producto AND pt.turnos_id_turno = " + idTurno + ";";
+        ResultSet result = ManejoDB.ejecutarQuery(query, true);
         try {
-            String query = "SELECT e.id_producto, e.tipo FROM esmaltes e JOIN productos_turnos pt WHERE id_esmalte=id_producto AND id_turno=" + idTurno + ";";
-            ResultSet result = ManejoDB.ejecutarQuery(query, true);
             while (result.next()) {
-                for (Producto producto : aux) {
-                    if (producto.getId() == result.getInt(1) && producto.getTipo().equalsIgnoreCase(result.getString(2))) {
-                        lista.add(producto);
-                        aux.remove(producto);
-                        break;
-                    }
-                }
-            }
-            query = "SELECT r.id_producto, r.tipo FROM removedores r JOIN productos_turnos pt WHERE id_removedor=id_producto AND id_turno=" + idTurno + ";";
-            result = ManejoDB.ejecutarQuery(query, true);
-            while (result.next()) {
-                for (Producto producto : aux) {
-                    if (producto.getId() == result.getInt(1) && producto.getTipo().equalsIgnoreCase(result.getString(2))) {
-                        lista.add(producto);
-                        aux.remove(producto);
-                        break;
-                    }
-                }
-            }
-            query = "SELECT h.id_producto, h.tipo FROM herramientas h JOIN productos_turnos pt WHERE id_removedor=id_producto AND id_turno=" + idTurno + ";";
-            result = ManejoDB.ejecutarQuery(query, true);
-            while (result.next()) {
-                for (Producto producto : aux) {
-                    if (producto.getId() == result.getInt(1) && producto.getTipo().equalsIgnoreCase(result.getString(2))) {
-                        lista.add(producto);
-                        aux.remove(producto);
-                        break;
-                    }
-                }
+                lista.add(listaProductos.get(result.getInt(1) - 1));
             }
         } catch (SQLException ex) {
             Logger.getLogger(TamyNails.class.getName()).log(Level.SEVERE, null, ex);
         }
+
         return lista;
     }
 
+    /**
+     * Agrega un producto (Esmalte) a la BD
+     *
+     * @param producto Producto
+     * @param tipo Tipo de producto
+     * @param color Color de producto
+     * @param efecto Efecto del producto
+     * @param precio Precio del producto
+     */
+    public static void agregarProducto(String producto, String tipo, String color, String efecto, String precio) {
+        for (Producto prod : listaProductos) {
+            Esmalte p = null;
+            if (prod.getClass().getSimpleName().equalsIgnoreCase("Esmalte")) {
+                p = (Esmalte) prod;
+            }
+            if (p != null && p.getTipo().equalsIgnoreCase(tipo) && p.getEfecto().equalsIgnoreCase(efecto) && p.getColor().equalsIgnoreCase(color) && p.getPrecio() == Double.parseDouble(precio)) {
+                String query = "UPDATE productos SET cantidad = " + (p.getCantidad() + 1) + " WHERE id_producto = " + p.getId() + ";";
+                if (ManejoDB.ejecutarQuery(query) > 0) {
+                    p.setCantidad(p.getCantidad() + 1);
+                }
+                return;
+            }
+        }
+
+        String query = "INSERT INTO productos (id_producto, tipo, precio, cantidad) VALUES (" + (listaProductos.size() + 1) + ", '" + tipo + "', " + Double.parseDouble(precio) + ", 1)";
+        if (ManejoDB.ejecutarQuery(query) > 0) {
+            query = "INSERT INTO esmaltes (color, efecto, productos_id_producto) VALUES ('" + color + "', '" + efecto + "', " + (listaProductos.size() + 1) + ");";
+            if (ManejoDB.ejecutarQuery(query) > 0) {
+                listaProductos.add(new Esmalte(listaProductos.size() + 1, tipo, Double.parseDouble(precio), color, efecto));
+            } else {
+                query = "DELETE FROM productos WHERE id_producto = " + (listaProductos.size() + 1) + ";";
+                ManejoDB.ejecutarQuery(query);
+            }
+        }
+    }
+
+    /**
+     * Agrega un producto (Herramienta o Removedor)
+     *
+     * @param producto Producto (Herramienta o Removedor)
+     * @param tipo Tipo de producto
+     * @param precio Precio de producto
+     */
+    public static void agregarProducto(String producto, String tipo, String precio) {
+
+        for (Producto p : listaProductos) {
+            if (p.getTipo().equalsIgnoreCase(tipo) && p.getPrecio() == Double.parseDouble(precio)) {
+                String query = "UPDATE productos SET cantidad = " + (p.getCantidad() + 1) + " WHERE id_producto = " + p.getId() + ";";
+                if (ManejoDB.ejecutarQuery(query) > 0) {
+                    p.setCantidad(p.getCantidad() + 1);
+                }
+                return;
+            }
+        }
+
+        String query = "INSERT INTO productos (id_producto, tipo, precio, cantidad) VALUES (" + (listaProductos.size() + 1) + ", '" + producto + " " + tipo + "', " + Double.parseDouble(precio) + ", 1)";
+        if (ManejoDB.ejecutarQuery(query) > 0) {
+            switch (producto) {
+                case "Herramienta":
+                    listaProductos.add(new Herramienta(listaProductos.size() + 1, tipo, Double.parseDouble(precio)));
+                    break;
+                case "Removedor":
+                    listaProductos.add(new Removedor(listaProductos.size() + 1, tipo, Double.parseDouble(precio)));
+                    break;
+            }
+        }
+    }
 }
