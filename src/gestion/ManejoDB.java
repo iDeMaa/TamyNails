@@ -7,12 +7,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import recursos.Esmalte;
 import recursos.Herramienta;
-import recursos.Producto;
 import recursos.Removedor;
 
 /**
@@ -66,16 +64,16 @@ public abstract class ManejoDB {
         String url = "jdbc:mysql://localhost:3306/?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            conexion = (Connection) DriverManager.getConnection(url, "root", "demaadota");
+            conexion = (Connection) DriverManager.getConnection(url, "root", "password");
             instruccion = conexion.createStatement();
             String query = "CREATE SCHEMA IF NOT EXISTS tamynails;";
             instruccion.execute(query);
             url = "jdbc:mysql://localhost:3306/tamynails?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
-            conexion = (Connection) DriverManager.getConnection(url, "root", "demaadota");
+            conexion = (Connection) DriverManager.getConnection(url, "root", "password");
             instruccion = conexion.createStatement();
             ManejoDB.crearBD();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (ClassNotFoundException | SQLException e) {
+            System.out.println(e.getMessage());
         }
     }
 
@@ -131,8 +129,8 @@ public abstract class ManejoDB {
                     + "  CONSTRAINT `fk_esmaltes_productos`\n"
                     + "    FOREIGN KEY (`productos_id_producto`)\n"
                     + "    REFERENCES `tamynails`.`productos` (`id_producto`)\n"
-                    + "    ON DELETE NO ACTION\n"
-                    + "    ON UPDATE NO ACTION)\n"
+                    + "    ON DELETE CASCADE\n"
+                    + "    ON UPDATE CASCADE)\n"
                     + "ENGINE = InnoDB;";
             instruccion.execute(query);
             query = "CREATE TABLE IF NOT EXISTS `tamynails`.`productos_turnos` (\n"
@@ -143,13 +141,13 @@ public abstract class ManejoDB {
                     + "  CONSTRAINT `fk_productos_turnos_productos1`\n"
                     + "    FOREIGN KEY (`productos_id_producto`)\n"
                     + "    REFERENCES `tamynails`.`productos` (`id_producto`)\n"
-                    + "    ON DELETE NO ACTION\n"
-                    + "    ON UPDATE NO ACTION,\n"
+                    + "    ON DELETE CASCADE\n"
+                    + "    ON UPDATE CASCADE,\n"
                     + "  CONSTRAINT `fk_productos_turnos_turnos1`\n"
                     + "    FOREIGN KEY (`turnos_id_turno`)\n"
                     + "    REFERENCES `tamynails`.`turnos` (`id_turno`)\n"
-                    + "    ON DELETE NO ACTION\n"
-                    + "    ON UPDATE NO ACTION)\n"
+                    + "    ON DELETE CASCADE\n"
+                    + "    ON UPDATE CASCADE)\n"
                     + "ENGINE = InnoDB;";
             instruccion.execute(query);
         } catch (SQLException e) {
@@ -168,6 +166,11 @@ public abstract class ManejoDB {
 
             while (result.next()) {
                 TamyNails.getListaClientes().add(new Cliente(result.getInt(1), result.getString(2), result.getString(3), result.getString(4)));
+            }
+
+            Collections.sort(TamyNails.getListaClientes());
+            for (Cliente c : TamyNails.getListaClientes()) {
+                System.out.println(c.getId());
             }
 
             //OBTENCIÓN DE TURNOS Y ASIGNACIÓN DE TURNOS A CLIENTES
@@ -216,14 +219,13 @@ public abstract class ManejoDB {
                 }
             }
             Collections.sort(TamyNails.getListaProductos());
-            
+
             query = "SELECT * FROM productos_turnos";
             result = ManejoDB.ejecutarQuery(query, true);
-            System.out.println(TamyNails.getListaTurnos().size()+"\t"+TamyNails.getListaProductos().size());
-            while(result.next()){
-                TamyNails.getListaTurnos().get(result.getInt(2)-1).getListaProductos().add(TamyNails.getListaProductos().get(result.getInt(1)-1));
+            while (result.next()) {
+                TamyNails.getListaTurnos().get(result.getInt(2) - 1).getListaProductos().add(TamyNails.getListaProductos().get(result.getInt(1) - 1));
             }
-            
+
         } catch (SQLException ex) {
             Logger.getLogger(ManejoDB.class.getName()).log(Level.SEVERE, null, ex);
         }

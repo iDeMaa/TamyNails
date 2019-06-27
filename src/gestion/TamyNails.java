@@ -77,18 +77,19 @@ public abstract class TamyNails {
                     return;
                 }
             }
-            int num = listaClientes.size() + 1;
+            int id = 1;
             if (!listaClientes.isEmpty()) {
-                for (int i = 0; i < listaClientes.size() - 1; i++) {
-                    if (listaClientes.get(i).getId() + 1 < listaClientes.get(i + 1).getId()) {
-                        num = listaClientes.get(i).getId() + 1;
+                for (Cliente c : listaClientes) {
+                    if (c.getId() == id) {
+                        id++;
+                    } else {
                         break;
                     }
                 }
             }
-            String query = "INSERT INTO clientes(id_cliente, nombre, apellido, telefono) VALUES (" + num + ",'" + nom + "','" + ape + "','" + tel + "');";
+            String query = "INSERT INTO clientes(id_cliente, nombre, apellido, telefono) VALUES (" + id + ",'" + nom + "','" + ape + "','" + tel + "');";
             if (ManejoDB.ejecutarQuery(query) > 0) {
-                listaClientes.add(new Cliente(num, nom, ape, tel));
+                listaClientes.add(new Cliente(id, nom, ape, tel));
                 Collections.sort(listaClientes);
             }
         }
@@ -119,7 +120,8 @@ public abstract class TamyNails {
      *
      * @param idCliente ID del cliente que solicitó el turno
      * @param desc Descripción del turno
-     * @param fecha Fecha y hora del turno
+     * @param fecha Fecha del turno
+     * @param hora Hora del turno
      * @param monto Monto del turno
      */
     public static void asignarTurno(int idCliente, String desc, String fecha, String hora, int monto) {
@@ -131,17 +133,21 @@ public abstract class TamyNails {
             }
         }
         if (cliente != null) {
-            int idTurno = -1;
+            int id = 1;
             if (!listaTurnos.isEmpty()) {
-                idTurno = listaTurnos.get(listaTurnos.size() - 1).getId() + 1;
-            } else {
-                idTurno = 1;
+                for (Turno t : listaTurnos) {
+                    if (t.getId() == id) {
+                        id++;
+                    } else {
+                        break;
+                    }
+                }
             }
             String texto = "¿Estás segura que queres añadir el turno al cliente?\nCliente: " + cliente.getNombre() + " " + cliente.getApellido()
                     + "\nDescripción: " + desc + "\nFecha: " + fecha + "\nHora: " + hora + "\nMonto: " + monto;
             int respuesta = JOptionPane.showConfirmDialog(null, texto, "¿Estás segura?", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
             if (respuesta == JOptionPane.YES_OPTION) {
-                Turno turno = new Turno(idTurno, cliente, desc, fecha, hora, monto, false);
+                Turno turno = new Turno(id, cliente, desc, fecha, hora, monto, false);
                 String[] fechaArray = fecha.split("/");
                 fecha = "";
                 for (int i = fechaArray.length - 1; i >= 0; i--) {
@@ -160,9 +166,6 @@ public abstract class TamyNails {
                     cliente.asignarTurno(turno);
                     listaTurnos.add(turno);
                 }
-                listaTurnos.forEach((turnos) -> {
-                    System.out.println("ID: " + turnos.getId() + "\n Cliente: " + turnos.getCliente().getNombre() + " " + turnos.getCliente().getApellido());
-                });
             }
         }
     }
